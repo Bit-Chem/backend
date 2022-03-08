@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 
 contract Chem is ERC1155 {
-    
+
     //Bare Elements
     uint256 public constant Hydrogen = 1;
     uint256 public constant Helium = 2;
@@ -20,7 +20,7 @@ contract Chem is ERC1155 {
     //Merged Elements
     uint256 public constant Water = 200;
 
-    string public Elements = 'ipfs://QmfLahwBhRCuMP29EqH5X1iNjgAXcwLgn3yGfQkqCL9aMi/';  
+    string public Elements = 'ipfs://QmcJ1bQbBR3hUos1UaLm7v2mFxJ9ykHEV5zLLmYWpcp8BN/';  
     
 
     constructor() ERC1155(Elements) {
@@ -44,12 +44,16 @@ contract Chem is ERC1155 {
         _mint(msg.sender, Beryllium, _amount, "");
     }
 
+    function mintOxygen(uint256 _amount) public {
+        _mint(msg.sender, Oxygen, _amount, "");
+    }
+
     // to move to 2nd contract
     //Elemental Merging
     function createWater()public {
         //work on burn batch problem
         _burn(msg.sender, Hydrogen, 2) ; //from, ids [], amounts []
-        _burn(msg.sender, Helium, 1);
+        _burn(msg.sender, Oxygen, 1);
         _mint(msg.sender, Water, 1, '');
     }  
 
