@@ -24,7 +24,7 @@ contract Chem is ERC1155 {
     
 
     constructor() ERC1155(Elements) {
-        _mint(msg.sender, Hydrogen, 1,'');
+
     }
 
     // Mint Elements
