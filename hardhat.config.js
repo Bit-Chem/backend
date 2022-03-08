@@ -36,6 +36,11 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
       saveDeployments: true,
     },
+    xdai: {
+      url: process.env.XDAI_RPC_URL,
+      accounts: [process.env.PRIVATE_KEY],
+      saveDeployments: true,
+    },
     mumbai: {
       url: process.env.MUMBAI_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
