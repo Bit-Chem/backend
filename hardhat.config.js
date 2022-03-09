@@ -44,7 +44,7 @@ module.exports = {
     mumbai: {
       url: process.env.MUMBAI_RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
-      gas: 300000000,
+      gas: 200000000,
       gasPrice: 100000000000,
       saveDeployments: true,
     }
