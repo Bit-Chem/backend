@@ -17,8 +17,6 @@ contract Chem is ERC1155 {
 
     WBTC public wbtcContract;
 
-   // address wbtcContract;
-
     //Bare Elements
     uint256 public constant Hydrogen = 1;
     uint256 public constant Helium = 2;
@@ -107,7 +105,7 @@ contract Chem is ERC1155 {
 
     // to move to 2nd contract
     //Elemental Merging
-    function createWater()public {
+    function createWater(uint256 _beaker)public {
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
@@ -120,23 +118,45 @@ contract Chem is ERC1155 {
         
         require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
         require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
+        require(_beaker >=1000 && _beaker <=1002, 'Not a valid Beaker');
 
         //work on burn batch problem
         _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
-        supplyBalance[msg.sender][Hydrogen] = supplyBalance[msg.sender][Hydrogen] - hydrogenRequired;
+        supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
         _burn(msg.sender, Oxygen, oxygenRequired);
-        supplyBalance[msg.sender][Oxygen] = supplyBalance[msg.sender][Oxygen] - oxygenRequired;
+        supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
 
         uint256 random = randomize();
         console.log("random number is:", random);
 
-        if(random > 50){
-        _mint(msg.sender, Water, minimum, '');
-        supplyBalance[msg.sender][Water] = supplyBalance[msg.sender][Water] + minimum;
+        if(_beaker == cheapBeaker) {
+
+            if(random > 50){
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][Water] +=  minimum;
+            } else {
+                 console.log("bonus hit");
+                _mint(msg.sender, Water, 2, '');
+                supplyBalance[msg.sender][Water] += bonus;
+            }
+        } else if(_beaker == regularBeaker){
+            if(random > 70){
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][Water] +=  minimum;
+            } else {
+                 console.log("bonus hit");
+                _mint(msg.sender, Water, 2, '');
+                supplyBalance[msg.sender][Water] += bonus;
+            }
         } else {
-        console.log("bonus hit");
-        _mint(msg.sender, Water, 2, '');
-        supplyBalance[msg.sender][Water] =  supplyBalance[msg.sender][Water] + bonus;
+            if(random > 95){
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][Water] +=  minimum;
+            } else {
+                 console.log("bonus hit");
+                _mint(msg.sender, Water, 2, '');
+                supplyBalance[msg.sender][Water] += bonus;
+            }
         }
     }  
 

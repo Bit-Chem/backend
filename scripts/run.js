@@ -40,17 +40,20 @@ async function main() {
   let wbtcBal2 = await chem.btcTokenBalance(owner.address);
   console.log("Local WBTC balance", wbtcBal2)
 
-/*
+  let txnBeaker = await chem.mintEpicBeaker(50)
+  await txnBeaker.wait()
+
+
   for(let i = 0; i < 50; i++) {
-  let watertxn = await chem.createWater()
+  let watertxn = await chem.createWater(1002)
   await watertxn.wait()
-  let waterBal = await chem.supplyBalance(owner.address, 200)
+//  let waterBal = await chem.supplyBalance(owner.address, 200)
 //  console.log ("Water balance:", waterBal)
-  let hydroBalUp = await chem.supplyBalance(owner.address, 1);
+//  let hydroBalUp = await chem.supplyBalance(owner.address, 1);
 //  console.log("Hydrogen balance:", hydroBalUp)
-  let oxyBalUp = await chem.supplyBalance(owner.address, 8);
+ // let oxyBalUp = await chem.supplyBalance(owner.address, 8);
 //  console.log("Oxygen balance:", oxyBalUp)
-  } */
+  } 
 
 
 
