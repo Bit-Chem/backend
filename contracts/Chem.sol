@@ -1,12 +1,23 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.7;
 
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./WBTC.sol";
 
 import "hardhat/console.sol";
 
+/*
+interface IWBTC {
+    function mint(address _account, uint256 _amount) external;
+} */
+
 contract Chem is ERC1155 {
+
+    WBTC public wbtcContract;
+
+   // address wbtcContract;
 
     //Bare Elements
     uint256 public constant Hydrogen = 1;
@@ -26,12 +37,25 @@ contract Chem is ERC1155 {
     string public Elements = 'ipfs://QmcJ1bQbBR3hUos1UaLm7v2mFxJ9ykHEV5zLLmYWpcp8BN/';  
 
     mapping(address => mapping (uint256 => uint256))  public supplyBalance;
+    mapping(address =>uint256)  public btcTokenBalance; 
     
 
-    constructor() ERC1155(Elements) {
-
+    constructor(address _address) ERC1155(Elements) {
+        
+        wbtcContract = WBTC(_address);
     }
 
+/*
+    //set contract for WBTC
+    function setwbtcContract(address addr) public onlyOwner {
+        wbtcContract = addr;
+    } */
+ 
+    //Mint wBTC
+    function mintBTC(uint256 _amount) public {
+        wbtcContract.mint(msg.sender, _amount);
+        btcTokenBalance[msg.sender] += _amount;
+    }  
     // Mint Elements
     function mintHydrogen(uint256 _amount) public {
         _mint(msg.sender, Hydrogen, _amount, "");
@@ -79,7 +103,7 @@ contract Chem is ERC1155 {
 
     function symbol() public pure returns (string memory) {
         return "ELMT";
-    }
+    }  
 
     // to move to 2nd contract
     //Elemental Merging

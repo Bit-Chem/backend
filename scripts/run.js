@@ -2,9 +2,16 @@
 const hre = require("hardhat");
 
 async function main() {
+
+  const WBTC = await hre.ethers.getContractFactory("WBTC");
+  const wbtc = await WBTC.deploy();
+
+  await wbtc.deployed();
+
+  console.log("WBTC Contract deployed to:", wbtc.address);
   
   const Chem = await hre.ethers.getContractFactory("Chem");
-  const chem = await Chem.deploy();
+  const chem = await Chem.deploy(wbtc.address);
 
   await chem.deployed();
 
@@ -26,7 +33,15 @@ async function main() {
   let oxyBal = await chem.supplyBalance(owner.address, 8);
 //  console.log("Oxygen balance:", oxyBal)
 
-  for(let i = 0; i < 51; i++) {
+  let txnWBTC = await chem.mintBTC(50)
+  await txnWBTC.wait()
+  let wbtcBal = await wbtc.tokenBalance(owner.address);
+  console.log("WBTC balance", wbtcBal)
+  let wbtcBal2 = await chem.btcTokenBalance(owner.address);
+  console.log("Local WBTC balance", wbtcBal2)
+
+/*
+  for(let i = 0; i < 50; i++) {
   let watertxn = await chem.createWater()
   await watertxn.wait()
   let waterBal = await chem.supplyBalance(owner.address, 200)
@@ -35,7 +50,9 @@ async function main() {
 //  console.log("Hydrogen balance:", hydroBalUp)
   let oxyBalUp = await chem.supplyBalance(owner.address, 8);
 //  console.log("Oxygen balance:", oxyBalUp)
-  }
+  } */
+
+
 
   
   /*
