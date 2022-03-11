@@ -26,7 +26,7 @@ contract Chem is ERC1155, Ownable {
     uint256 public constant Oxygen = 8;
     //Merged Elements
     uint256 public constant Water = 200;
-    uint256 public constant PureWater = 201;
+    //uint256 public constant PureWater = 201;
 
     //Beakers
     uint256 public constant cheapBeaker = 1000;
@@ -80,19 +80,16 @@ contract Chem is ERC1155, Ownable {
         require(_amount >= Water && _amount <= PureWater, "Not Valid Creation");
         console.log("passed the requirement");
         uint256 reward = 2;
+        uint256 amountBurned = 1; 
         if(_amount == Water) {
             uint256 newReward = 2;
             reward = reward / newReward;
             console.log("reward value", reward);
-            _burn(msg.sender, Water, 1) ; //from, ids [], amounts []
+            _burn(msg.sender, Water, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][Water] -= reward;
             wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
             btcTokenBalance[msg.sender] += reward;
-        } else if(_amount == PureWater){
-            _burn(msg.sender, Water, 1) ; //from, ids [], amounts []
-            supplyBalance[msg.sender][Water] -= reward;
-            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
-            btcTokenBalance[msg.sender] += reward;
+        } else if(_amount == PureWater){  // adjust
         }
     }
 
@@ -147,7 +144,7 @@ contract Chem is ERC1155, Ownable {
 
     // to move to 2nd contract
     //Elemental Merging
-    function createWater(uint256 _beaker)public {
+    function createWater(uint256 _beaker) public {
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
@@ -174,30 +171,27 @@ contract Chem is ERC1155, Ownable {
         if(_beaker == cheapBeaker) {
 
             if(random > 50){
-                _mint(msg.sender, Water, minimum, '');
-                supplyBalance[msg.sender][Water] +=  minimum;
+                console.log("failure");
             } else {
-                 console.log("bonus hit");
-                _mint(msg.sender, PureWater, minimum, '');
-                supplyBalance[msg.sender][PureWater] += minimum;
+                 console.log("Water Created");
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][Water] += minimum;
             }
         } else if(_beaker == regularBeaker){
             if(random > 70){
-                _mint(msg.sender, Water, minimum, '');
-                supplyBalance[msg.sender][Water] +=  minimum;
+                console.log("failure");
             } else {
-                 console.log("bonus hit");
+                 console.log("Water Created");
                 _mint(msg.sender, Water, minimum, '');
-                supplyBalance[msg.sender][PureWater] += minimum;
+                supplyBalance[msg.sender][Water] += minimum;
             }
         } else {
             if(random > 95){
-                _mint(msg.sender, Water, minimum, '');
-                supplyBalance[msg.sender][Water] +=  minimum;
+                console.log("failure");
             } else {
-                 console.log("bonus hit");
+                console.log("Water Created");
                 _mint(msg.sender, Water, minimum, '');
-                supplyBalance[msg.sender][PureWater] += minimum;
+                supplyBalance[msg.sender][Water] += minimum;
             }
         }
     }  

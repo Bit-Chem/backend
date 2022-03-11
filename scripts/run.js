@@ -55,7 +55,7 @@ async function main() {
   //console.log("Oxygen Balance", oxyBal)
 
 
-  for(let i = 0; i < 50; i++) {
+  for(let i = 0; i < 15; i++) {
   let watertxn = await chem.createWater(1000)
   await watertxn.wait()
   
@@ -76,7 +76,7 @@ async function main() {
   console.log("Bitcoin Bal:", wbtcBal4)
 
   console.log("Sell NFT")
-  let sellfNFT = await chem.sellNFT(201);
+  let sellfNFT = await chem.sellNFT(200);
   await sellfNFT.wait()
 
   let waterBal2 = await chem.supplyBalance(owner.address, 200);
