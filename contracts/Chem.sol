@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./WBTC.sol";
 
@@ -13,7 +14,7 @@ interface IWBTC {
     function mint(address _account, uint256 _amount) external;
 } */
 
-contract Chem is ERC1155 {
+contract Chem is ERC1155, Ownable {
 
     WBTC public wbtcContract;
 
@@ -25,6 +26,8 @@ contract Chem is ERC1155 {
     uint256 public constant Oxygen = 8;
     //Merged Elements
     uint256 public constant Water = 200;
+    uint256 public constant PureWater = 201;
+
     //Beakers
     uint256 public constant cheapBeaker = 1000;
     uint256 public constant regularBeaker = 1001;
@@ -43,17 +46,55 @@ contract Chem is ERC1155 {
         wbtcContract = WBTC(_address);
     }
 
-/*
-    //set contract for WBTC
+
+    //set contract for WBTC - if need to change
     function setwbtcContract(address addr) public onlyOwner {
-        wbtcContract = addr;
-    } */
+        wbtcContract = WBTC(addr);
+    } 
  
     //Mint wBTC
     function mintBTC(uint256 _amount) public {
         wbtcContract.mint(msg.sender, _amount);
         btcTokenBalance[msg.sender] += _amount;
     }  
+
+    //Stake wBTC
+    function stakeBTC(uint256 _amount) public payable {
+        require(_amount > 0, "Amount must be greater than zer0");
+        // Transfer wBtc to smart contract
+        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+        btcTokenBalance[msg.sender] -= _amount;
+        //Mint Materials
+        mintHydrogen(10);
+        mintHelium(10);
+        mintBeryllium(10);
+        mintLithium(10);
+        mintOxygen(10);
+        mintCheapBeaker(10);
+        mintEpicBeaker(10);
+        mintRegularBeaker(10);
+    }
+
+    function sellNFT(uint256 _amount) public { // for now water 200 pureW 201
+        require(_amount >= Water && _amount <= PureWater, "Not Valid Creation");
+        console.log("passed the requirement");
+        uint256 reward = 2;
+        if(_amount == Water) {
+            uint256 newReward = 2;
+            reward = reward / newReward;
+            console.log("reward value", reward);
+            _burn(msg.sender, Water, 1) ; //from, ids [], amounts []
+            supplyBalance[msg.sender][Water] -= reward;
+            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+            btcTokenBalance[msg.sender] += reward;
+        } else if(_amount == PureWater){
+            _burn(msg.sender, Water, 1) ; //from, ids [], amounts []
+            supplyBalance[msg.sender][Water] -= reward;
+            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+            btcTokenBalance[msg.sender] += reward;
+        }
+    }
+
     // Mint Elements
     function mintHydrogen(uint256 _amount) public {
         _mint(msg.sender, Hydrogen, _amount, "");
@@ -114,11 +155,11 @@ contract Chem is ERC1155 {
         uint256 oxygenRequired = 1;
         //creations
         uint256 minimum = 1;
-        uint256 bonus = 2;
+        //uint256 bonus = 2;
         
         require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
         require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
-        require(_beaker >=1000 && _beaker <=1002, 'Not a valid Beaker');
+        require(_beaker >=cheapBeaker && _beaker <=epicBeaker, 'Not a valid Beaker');
 
         //work on burn batch problem
         _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
@@ -136,8 +177,8 @@ contract Chem is ERC1155 {
                 supplyBalance[msg.sender][Water] +=  minimum;
             } else {
                  console.log("bonus hit");
-                _mint(msg.sender, Water, 2, '');
-                supplyBalance[msg.sender][Water] += bonus;
+                _mint(msg.sender, PureWater, minimum, '');
+                supplyBalance[msg.sender][PureWater] += minimum;
             }
         } else if(_beaker == regularBeaker){
             if(random > 70){
@@ -145,8 +186,8 @@ contract Chem is ERC1155 {
                 supplyBalance[msg.sender][Water] +=  minimum;
             } else {
                  console.log("bonus hit");
-                _mint(msg.sender, Water, 2, '');
-                supplyBalance[msg.sender][Water] += bonus;
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][PureWater] += minimum;
             }
         } else {
             if(random > 95){
@@ -154,8 +195,8 @@ contract Chem is ERC1155 {
                 supplyBalance[msg.sender][Water] +=  minimum;
             } else {
                  console.log("bonus hit");
-                _mint(msg.sender, Water, 2, '');
-                supplyBalance[msg.sender][Water] += bonus;
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][PureWater] += minimum;
             }
         }
     }  
