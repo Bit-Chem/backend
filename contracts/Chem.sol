@@ -75,6 +75,7 @@ contract Chem is ERC1155, Ownable {
         mintRegularBeaker(10);
     }
 
+    //Sell Crafted Elements
     function sellNFT(uint256 _amount) public { // for now water 200 pureW 201
         require(_amount >= Water && _amount <= PureWater, "Not Valid Creation");
         console.log("passed the requirement");
