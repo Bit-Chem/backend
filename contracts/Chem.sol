@@ -33,7 +33,12 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     uint256 public constant Neon = 10;
     //Merged Elements
     uint256 public constant Water = 200;
-    uint256 public constant PureWater = 201;
+
+    uint256 public constant LiOH = 201;  // 2 Li + 2 H20 Reaction set
+    uint256 public constant H2 = 202;
+
+    uint256 public constant H2O2 = 203;  // Hydrogen Per Oxide
+
     //Beakers
     //uint256 public constant cheapBeaker = 1000;
     //uint256 public constant regularBeaker = 1001;
@@ -46,7 +51,8 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     uint256 public randomResult;
     bytes32 internal keyHash;
 
-    string public Elements = 'ipfs://QmcJ1bQbBR3hUos1UaLm7v2mFxJ9ykHEV5zLLmYWpcp8BN/';  
+    string public Elements =  'ipfs://QmSoGVnjD82B6TJWN459LuqiexAchsryeovzSARnV8TEvX/';  
+                            //'ipfs://QmcJ1bQbBR3hUos1UaLm7v2mFxJ9ykHEV5zLLmYWpcp8BN/';  
 
     mapping(address => mapping (uint256 => uint256))  public supplyBalance;
     mapping(address =>uint256)  public btcTokenBalance; 
@@ -65,8 +71,14 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         fee = 0.0001 * 10 ** 18; // 0.0001 LINK
     }
 
+    //Element Events
     event WaterCreated(uint256 tokenId, address receiver, uint256 mintedAmount);
     event WaterCreationFailed(string failure);
+    event H2O2Created(uint256 H202, address recieverHO, uint256 mintedH202);
+    event H2O2CreationFailed(string FailedH202);
+    event LiOHCreated(uint256 LithWat, address recieverLit, uint256 mintedLiH202);
+    event LiOHCreationFailed(string FailedLiH202);
+
     event RandomNumber(uint256 randomReturn);
     event WBTCMinted(string Minted);
 
@@ -80,9 +92,10 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         wbtcContract.mint(msg.sender, _amount);
         btcTokenBalance[msg.sender] += _amount;
         emit WBTCMinted("wBTC Minted");
+        getRandomNumber(); // start a random number flow going
     }  
 
-    //Stake wBTC
+    //Stake wBTC  -- this will be phased out.
     function stakeBTC(uint256 _amount) public payable {
         require(_amount > 0, "Amount must be greater than zer0");
         // Transfer wBtc to smart contract
@@ -103,19 +116,30 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
     //Sell Crafted Elements
     function sellNFT(uint256 _amount) public { // for now water 200 pureW 201
-        require(_amount >= Water && _amount <= PureWater, "Not Valid Creation");
-       
-        uint256 reward = 2;  // need to multiply by 10 **18
+        require(_amount >= Water && _amount <= H2O2, "Not Valid Creation");
+       // do a requirement for contract balance
+        uint256 reward = 1 * (10 ** 16);  // need to multiply by 10 **18
         uint256 amountBurned = 1; 
         if(_amount == Water) {
-            uint256 newReward = 2;
-            reward = reward / newReward;
-           // console.log("reward value", reward);
             _burn(msg.sender, Water, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][Water] -= reward;
             wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
             btcTokenBalance[msg.sender] += reward;
-        } else if(_amount == PureWater){  // adjust
+        } else if (_amount == LiOH){
+            _burn(msg.sender, LiOH, amountBurned) ; //from, ids [], amounts []
+            supplyBalance[msg.sender][LiOH] -= reward;
+            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+            btcTokenBalance[msg.sender] += reward;
+        } else if (_amount == H2) {
+            _burn(msg.sender, H2, amountBurned) ; //from, ids [], amounts []
+            supplyBalance[msg.sender][H2] -= reward;
+            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+            btcTokenBalance[msg.sender] += reward;
+        } else {
+            _burn(msg.sender, H2O2, amountBurned) ; //from, ids [], amounts []
+            supplyBalance[msg.sender][H2O2] -= reward;
+            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+            btcTokenBalance[msg.sender] += reward;
         }
     }
 
@@ -170,13 +194,14 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     }  
 
     // to move to 2nd contract
-    //Elemental Merging
+    /*  Creating seperate functions for now
     function mergeElements() public {
         getRandomNumber();
         createWater();
-    }
+    } */
 
-    function createWater() internal { //took away public
+    //Elemental Merging
+    function createWater() public { 
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
@@ -187,9 +212,13 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         uint256 minimum = 1;
         //uint256 bonus = 2;
         
+        uint256 random = randomResult;
+        emit RandomNumber(random);
+
         require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
         require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
         // require(_beaker >=cheapBeaker && _beaker <=epicBeaker, 'Not a valid Beaker');
+
 
         //work on burn batch problem
         _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
@@ -197,9 +226,6 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         _burn(msg.sender, Oxygen, oxygenRequired);
         supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
 
-        uint256 random = randomResult;
-
-        emit RandomNumber(random);
 
         if(random < 10){  // check this variable
             emit WaterCreationFailed("Failure");
@@ -209,6 +235,8 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
                 emit WaterCreated(Water, msg.sender, minimum);
         }
+        //queu up a random number
+        getRandomNumber();
 
           /* Kill beaker logic
         if(_beaker == cheapBeaker) {
@@ -239,6 +267,75 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         } */
     }  
 
+    function createH2O2() public { 
+        //inventory
+        uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
+        uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
+        //requirements
+        uint256 hydrogenRequired = 2;
+        uint256 oxygenRequired = 2;
+        //creations
+        uint256 minimum = 1;
+        
+        require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
+        require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
+
+        //work on burn batch problem
+        _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
+        supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
+        _burn(msg.sender, Oxygen, oxygenRequired);
+        supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
+
+        uint256 random = randomResult;
+        emit RandomNumber(random);
+
+        if(random < 10){  // check this variable
+            emit H2O2CreationFailed("Failure");
+            } else {
+                _mint(msg.sender, H2O2, minimum, '');
+                supplyBalance[msg.sender][H2O2] += minimum;
+                emit H2O2Created(H2O2, msg.sender, minimum);
+        }
+        //queu up a random number
+        getRandomNumber();
+    }
+
+    function createLiH2O() public { 
+        //inventory
+        uint256 lithiumSupply = supplyBalance[msg.sender][Lithium];
+        uint256 waterSupply = supplyBalance[msg.sender][Water];
+        //requirements
+        uint256 lithiumRequired = 2;
+        uint256 waterRequired = 2;
+        //creations
+        uint256 minimum = 2;
+        uint256 H2min = 1;
+        
+        require(lithiumSupply >= lithiumRequired, 'Not Enough Lithium');
+        require(waterSupply >= waterRequired, 'Not Enough Water');
+
+        //work on burn batch problem
+        _burn(msg.sender, Lithium, lithiumRequired) ; //from, ids [], amounts []
+        supplyBalance[msg.sender][Lithium] -= lithiumRequired;
+        _burn(msg.sender, Water, waterRequired);
+        supplyBalance[msg.sender][Water] -= waterRequired;
+
+        uint256 random = randomResult;
+        emit RandomNumber(random);
+
+        if(random < 10){  // check this variable
+            emit LiOHCreationFailed("Failure");
+            } else {
+                _mint(msg.sender, LiOH, minimum, '');
+                supplyBalance[msg.sender][LiOH] += minimum;
+                _mint(msg.sender, H2, H2min, '');
+                supplyBalance[msg.sender][H2] += H2min;
+                emit LiOHCreated(LiOH, msg.sender, minimum);
+        }
+        //queu up a random number
+        getRandomNumber();
+    }
+
     /* Using Chainlink Now
     // random section
     function randomize() private returns(uint256) {
@@ -257,6 +354,10 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         randomResult = randomness % 100;
     }
 
+    //function to pull out extra link
+    function withdrawLink() public onlyOwner {
+        require(LINK.transfer(msg.sender, LINK.balanceOf(address(this))), "Unable to transfer");
+    }
 
     // URI overide for number schemes
     function uri(uint256 _tokenId) override public view returns (string memory) {
