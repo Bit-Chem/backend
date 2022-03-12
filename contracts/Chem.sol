@@ -25,14 +25,19 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     uint256 public constant Helium = 2;
     uint256 public constant Lithium = 3;
     uint256 public constant Beryllium = 4;
+    uint256 public constant Boron = 5;
+    uint256 public constant Carbon = 6;
+    uint256 public constant Nitrogen = 7;
     uint256 public constant Oxygen = 8;
+    uint256 public constant Fluorine = 9;
+    uint256 public constant Neon = 10;
     //Merged Elements
     uint256 public constant Water = 200;
     uint256 public constant PureWater = 201;
     //Beakers
-    uint256 public constant cheapBeaker = 1000;
-    uint256 public constant regularBeaker = 1001;
-    uint256 public constant epicBeaker = 1002;
+    //uint256 public constant cheapBeaker = 1000;
+    //uint256 public constant regularBeaker = 1001;
+    //uint256 public constant epicBeaker = 1002;
     //seed
     uint256 private seed; //seed used to randomize
 
@@ -60,6 +65,10 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         fee = 0.0001 * 10 ** 18; // 0.0001 LINK
     }
 
+    event WaterCreated(uint256 tokenId, address receiver, uint256 mintedAmount);
+    event WaterCreationFailed(string failure);
+    event RandomNumber(uint256 randomReturn);
+    event WBTCMinted(string Minted);
 
     //set contract for WBTC - if need to change
     function setwbtcContract(address addr) public onlyOwner {
@@ -70,6 +79,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     function mintBTC(uint256 _amount) public {
         wbtcContract.mint(msg.sender, _amount);
         btcTokenBalance[msg.sender] += _amount;
+        emit WBTCMinted("wBTC Minted");
     }  
 
     //Stake wBTC
@@ -84,9 +94,11 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         mintBeryllium(10);
         mintLithium(10);
         mintOxygen(10);
-        mintCheapBeaker(10);
-        mintEpicBeaker(10);
-        mintRegularBeaker(10);
+        //start a random number process
+        getRandomNumber();
+       // mintCheapBeaker(10);
+       // mintEpicBeaker(10);
+       // mintRegularBeaker(10);
     }
 
     //Sell Crafted Elements
@@ -132,7 +144,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         _mint(msg.sender, Oxygen, _amount, "");
         supplyBalance[msg.sender][Oxygen] = supplyBalance[msg.sender][Oxygen] + _amount;
     }
-
+/*
     function mintCheapBeaker(uint256 _amount) public {
         _mint(msg.sender, cheapBeaker, _amount, "");
         supplyBalance[msg.sender][cheapBeaker] = supplyBalance[msg.sender][cheapBeaker] + _amount;
@@ -147,6 +159,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         _mint(msg.sender, epicBeaker, _amount, "");
         supplyBalance[msg.sender][epicBeaker] = supplyBalance[msg.sender][epicBeaker] + _amount;
     }
+    */
 
     function name() public pure returns (string memory) {
         return "Elements";
@@ -158,12 +171,12 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
     // to move to 2nd contract
     //Elemental Merging
-    function mergeElements(uint256 _beaker) public {
+    function mergeElements() public {
         getRandomNumber();
-        createWater(_beaker);
+        createWater();
     }
 
-    function createWater(uint256 _beaker) public {
+    function createWater() public {
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
@@ -176,7 +189,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         
         require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
         require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
-        require(_beaker >=cheapBeaker && _beaker <=epicBeaker, 'Not a valid Beaker');
+        // require(_beaker >=cheapBeaker && _beaker <=epicBeaker, 'Not a valid Beaker');
 
         //work on burn batch problem
         _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
@@ -185,8 +198,21 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
 
         uint256 random = randomResult;
-        console.log("random number is:", random);
 
+        emit RandomNumber(random);
+
+        if(random < 10){  // check this variable
+            emit WaterCreationFailed("Failure");
+                console.log("failure");
+            } else {
+                 console.log("Water Created");
+                _mint(msg.sender, Water, minimum, '');
+                supplyBalance[msg.sender][Water] += minimum;
+
+                emit WaterCreated(Water, msg.sender, minimum);
+        }
+
+          /* Kill beaker logic
         if(_beaker == cheapBeaker) {
 
             if(random > 50){
@@ -212,25 +238,25 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
                 _mint(msg.sender, Water, minimum, '');
                 supplyBalance[msg.sender][Water] += minimum;
             }
-        }
+        } */
     }  
 
+    /* Using Chainlink Now
     // random section
     function randomize() private returns(uint256) {
         uint256 randomNumber = (block.difficulty + block.timestamp + seed) % 100;
         seed = randomNumber;
         return seed;
-    }
+    } */
 
     // chainlink
-
     function getRandomNumber() public returns (bytes32 requestId) {
         require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
         return requestRandomness(keyHash, fee);
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        randomResult = randomness;
+        randomResult = randomness % 100;
     }
 
 
