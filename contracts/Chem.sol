@@ -9,7 +9,7 @@ import "./WBTC.sol";
 //chainlink
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 /*
 interface IWBTC {
@@ -104,13 +104,13 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     //Sell Crafted Elements
     function sellNFT(uint256 _amount) public { // for now water 200 pureW 201
         require(_amount >= Water && _amount <= PureWater, "Not Valid Creation");
-        console.log("passed the requirement");
-        uint256 reward = 2;
+       
+        uint256 reward = 2;  // need to multiply by 10 **18
         uint256 amountBurned = 1; 
         if(_amount == Water) {
             uint256 newReward = 2;
             reward = reward / newReward;
-            console.log("reward value", reward);
+           // console.log("reward value", reward);
             _burn(msg.sender, Water, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][Water] -= reward;
             wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
@@ -176,7 +176,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         createWater();
     }
 
-    function createWater() public {
+    function createWater() internal { //took away public
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
@@ -203,9 +203,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
         if(random < 10){  // check this variable
             emit WaterCreationFailed("Failure");
-                console.log("failure");
             } else {
-                 console.log("Water Created");
                 _mint(msg.sender, Water, minimum, '');
                 supplyBalance[msg.sender][Water] += minimum;
 
