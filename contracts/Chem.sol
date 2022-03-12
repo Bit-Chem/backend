@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./WBTC.sol";
+//chainlink
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
 import "hardhat/console.sol";
 
@@ -14,7 +16,7 @@ interface IWBTC {
     function mint(address _account, uint256 _amount) external;
 } */
 
-contract Chem is ERC1155, Ownable {
+contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
     WBTC public wbtcContract;
 
@@ -26,8 +28,7 @@ contract Chem is ERC1155, Ownable {
     uint256 public constant Oxygen = 8;
     //Merged Elements
     uint256 public constant Water = 200;
-    //uint256 public constant PureWater = 201;
-
+    uint256 public constant PureWater = 201;
     //Beakers
     uint256 public constant cheapBeaker = 1000;
     uint256 public constant regularBeaker = 1001;
@@ -35,15 +36,28 @@ contract Chem is ERC1155, Ownable {
     //seed
     uint256 private seed; //seed used to randomize
 
+    //chainlink
+    uint256 internal fee;
+    uint256 public randomResult;
+    bytes32 internal keyHash;
+
     string public Elements = 'ipfs://QmcJ1bQbBR3hUos1UaLm7v2mFxJ9ykHEV5zLLmYWpcp8BN/';  
 
     mapping(address => mapping (uint256 => uint256))  public supplyBalance;
     mapping(address =>uint256)  public btcTokenBalance; 
     
 
-    constructor(address _address) ERC1155(Elements) {
+    constructor(address _address) 
+        ERC1155(Elements) 
+        VRFConsumerBase(
+             0x8C7382F9D8f56b33781fE506E897a4F1e2d17255,
+             0x326C977E6efc84E512bB9C30f76E30c160eD06FB 
+              ) public {
         
         wbtcContract = WBTC(_address);
+        //chainlink
+        keyHash = 0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4;
+        fee = 0.0001 * 10 ** 18; // 0.0001 LINK
     }
 
 
@@ -144,6 +158,11 @@ contract Chem is ERC1155, Ownable {
 
     // to move to 2nd contract
     //Elemental Merging
+    function mergeElements(uint256 _beaker) public {
+        getRandomNumber();
+        createWater(_beaker);
+    }
+
     function createWater(uint256 _beaker) public {
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
@@ -165,7 +184,7 @@ contract Chem is ERC1155, Ownable {
         _burn(msg.sender, Oxygen, oxygenRequired);
         supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
 
-        uint256 random = randomize();
+        uint256 random = randomResult;
         console.log("random number is:", random);
 
         if(_beaker == cheapBeaker) {
@@ -196,10 +215,22 @@ contract Chem is ERC1155, Ownable {
         }
     }  
 
+    // random section
     function randomize() private returns(uint256) {
         uint256 randomNumber = (block.difficulty + block.timestamp + seed) % 100;
         seed = randomNumber;
         return seed;
+    }
+
+    // chainlink
+
+    function getRandomNumber() public returns (bytes32 requestId) {
+        require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
+        return requestRandomness(keyHash, fee);
+    }
+
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+        randomResult = randomness;
     }
 
 
