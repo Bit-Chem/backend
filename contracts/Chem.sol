@@ -39,6 +39,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
     uint256 public constant H2O2 = 203;  // Hydrogen Per Oxide
 
+
     //Beakers
     //uint256 public constant cheapBeaker = 1000;
     //uint256 public constant regularBeaker = 1001;
@@ -117,8 +118,9 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     //Sell Crafted Elements
     function sellNFT(uint256 _amount) public { // for now water 200 pureW 201
         require(_amount >= Water && _amount <= H2O2, "Not Valid Creation");
+        require(_amount >= supplyBalance[msg.sender][_amount], "No Element In Inventory");
        // do a requirement for contract balance
-        uint256 reward = 1 * (10 ** 16);  // need to multiply by 10 **18
+        uint256 reward = 1;  // need to multiply by 10 **18
         uint256 amountBurned = 1; 
         if(_amount == Water) {
             _burn(msg.sender, Water, amountBurned) ; //from, ids [], amounts []
@@ -145,26 +147,46 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
 
     // Mint Elements
     function mintHydrogen(uint256 _amount) public {
+        require(_amount > 0, "Amount must be greater than zer0");
+        // Transfer wBtc to smart contract
+        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+        btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Hydrogen, _amount, "");
         supplyBalance[msg.sender][Hydrogen] = supplyBalance[msg.sender][Hydrogen] + _amount;
     }
 
     function mintHelium(uint256 _amount) public {
+        require(_amount > 0, "Amount must be greater than zer0");
+        // Transfer wBtc to smart contract
+        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+        btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Helium, _amount, "");
         supplyBalance[msg.sender][Helium] =supplyBalance[msg.sender][Helium] + _amount;
     }
 
     function mintLithium(uint256 _amount) public {
+        require(_amount > 0, "Amount must be greater than zer0");
+        // Transfer wBtc to smart contract
+        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+        btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Lithium, _amount, "");
         supplyBalance[msg.sender][Lithium] = supplyBalance[msg.sender][Lithium] + _amount;
     }
 
     function mintBeryllium(uint256 _amount) public {
+        require(_amount > 0, "Amount must be greater than zer0");
+        // Transfer wBtc to smart contract
+        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+        btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Beryllium, _amount, "");
         supplyBalance[msg.sender][Beryllium] = supplyBalance[msg.sender][Beryllium] + _amount;
     }
 
     function mintOxygen(uint256 _amount) public {
+        require(_amount > 0, "Amount must be greater than zer0");
+        // Transfer wBtc to smart contract
+        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+        btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Oxygen, _amount, "");
         supplyBalance[msg.sender][Oxygen] = supplyBalance[msg.sender][Oxygen] + _amount;
     }
@@ -201,13 +223,17 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     } */
 
     //Elemental Merging
-    function createWater() public { 
+    function createWater(uint256 _amount) public { 
+        require(_amount > 0, "Amount needs to be greater than 0");
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
         //requirements
         uint256 hydrogenRequired = 2;
         uint256 oxygenRequired = 1;
+        //requirement amount check
+        uint256 hydrogenRequiredAmount = 2 * _amount;
+        uint256 oxygenRequiredAmount = 2 * _amount;
         //creations
         uint256 minimum = 1;
         //uint256 bonus = 2;
@@ -215,26 +241,26 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         uint256 random = randomResult;
         emit RandomNumber(random);
 
-        require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
-        require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
+        require(hydrogenSupply >= hydrogenRequiredAmount, 'Not Enough Hydrogen');
+        require(oxygenSupply >= oxygenRequiredAmount, 'Not Enough Oxygen');
         // require(_beaker >=cheapBeaker && _beaker <=epicBeaker, 'Not a valid Beaker');
 
-
-        //work on burn batch problem
-        _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
-        supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
-        _burn(msg.sender, Oxygen, oxygenRequired);
-        supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
-
-
-        if(random < 10){  // check this variable
+        if(random < 10) {  // check this variable
             emit WaterCreationFailed("Failure");
-            } else {
-                _mint(msg.sender, Water, minimum, '');
-                supplyBalance[msg.sender][Water] += minimum;
+             } else {
+                for(uint256 i = 0; i < _amount; i++){
+                    //work on burn batch problem
+                    _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
+                    supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
+                    _burn(msg.sender, Oxygen, oxygenRequired);
+                    supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
 
-                emit WaterCreated(Water, msg.sender, minimum);
-        }
+                    _mint(msg.sender, Water, minimum, '');
+                    supplyBalance[msg.sender][Water] += minimum;
+                }
+                emit WaterCreated(Water, msg.sender, _amount);
+            }
+        
         //queu up a random number
         getRandomNumber();
 
@@ -267,69 +293,81 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         } */
     }  
 
-    function createH2O2() public { 
+    function createH2O2(uint256 _amount) public { 
+        require(_amount > 0, "Amount needs to be greater than 0");
         //inventory
         uint256 hydrogenSupply = supplyBalance[msg.sender][Hydrogen];
         uint256 oxygenSupply = supplyBalance[msg.sender][Oxygen];
         //requirements
         uint256 hydrogenRequired = 2;
         uint256 oxygenRequired = 2;
+        //requirement amount check
+        uint256 hydrogenRequiredAmount = 2 * _amount;
+        uint256 oxygenRequiredAmount = 2 * _amount;
         //creations
         uint256 minimum = 1;
-        
-        require(hydrogenSupply >= hydrogenRequired, 'Not Enough Hydrogen');
-        require(oxygenSupply >= oxygenRequired, 'Not Enough Oxygen');
-
-        //work on burn batch problem
-        _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
-        supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
-        _burn(msg.sender, Oxygen, oxygenRequired);
-        supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
 
         uint256 random = randomResult;
         emit RandomNumber(random);
+        
+        require(hydrogenSupply >= hydrogenRequiredAmount, 'Not Enough Hydrogen');
+        require(oxygenSupply >= oxygenRequiredAmount, 'Not Enough Oxygen');
+
 
         if(random < 10){  // check this variable
             emit H2O2CreationFailed("Failure");
             } else {
-                _mint(msg.sender, H2O2, minimum, '');
-                supplyBalance[msg.sender][H2O2] += minimum;
+                for(uint256 i = 0; i < _amount; i++){
+                    //work on burn batch problem
+                    _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
+                    supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
+                    _burn(msg.sender, Oxygen, oxygenRequired);
+                    supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
+
+                    _mint(msg.sender, H2O2, minimum, '');
+                    supplyBalance[msg.sender][H2O2] += minimum;
+                }
                 emit H2O2Created(H2O2, msg.sender, minimum);
         }
         //queu up a random number
         getRandomNumber();
     }
 
-    function createLiH2O() public { 
+    function createLiH2O(uint256 _amount) public {
+        require(_amount > 0, "Amount needs to be greater than 0"); 
         //inventory
         uint256 lithiumSupply = supplyBalance[msg.sender][Lithium];
         uint256 waterSupply = supplyBalance[msg.sender][Water];
         //requirements
         uint256 lithiumRequired = 2;
         uint256 waterRequired = 2;
+        //requirement amount check
+        uint256 lithiumRequiredAmount = 2 * _amount;
+        uint256 waterRequiredAmount = 2 * _amount;
         //creations
         uint256 minimum = 2;
         uint256 H2min = 1;
-        
-        require(lithiumSupply >= lithiumRequired, 'Not Enough Lithium');
-        require(waterSupply >= waterRequired, 'Not Enough Water');
-
-        //work on burn batch problem
-        _burn(msg.sender, Lithium, lithiumRequired) ; //from, ids [], amounts []
-        supplyBalance[msg.sender][Lithium] -= lithiumRequired;
-        _burn(msg.sender, Water, waterRequired);
-        supplyBalance[msg.sender][Water] -= waterRequired;
 
         uint256 random = randomResult;
         emit RandomNumber(random);
+        
+        require(lithiumSupply >= lithiumRequiredAmount, 'Not Enough Lithium');
+        require(waterSupply >= waterRequiredAmount, 'Not Enough Water');
 
         if(random < 10){  // check this variable
             emit LiOHCreationFailed("Failure");
             } else {
-                _mint(msg.sender, LiOH, minimum, '');
-                supplyBalance[msg.sender][LiOH] += minimum;
-                _mint(msg.sender, H2, H2min, '');
-                supplyBalance[msg.sender][H2] += H2min;
+                for(uint256 i = 0; i < _amount; i++){
+                    //work on burn batch problem
+                    _burn(msg.sender, Lithium, lithiumRequired) ; //from, ids [], amounts []
+                    supplyBalance[msg.sender][Lithium] -= lithiumRequired;
+                    _burn(msg.sender, Water, waterRequired);
+                    supplyBalance[msg.sender][Water] -= waterRequired;
+                    _mint(msg.sender, LiOH, minimum, '');
+                    supplyBalance[msg.sender][LiOH] += minimum;
+                    _mint(msg.sender, H2, H2min, '');
+                    supplyBalance[msg.sender][H2] += H2min;
+                }
                 emit LiOHCreated(LiOH, msg.sender, minimum);
         }
         //queu up a random number
