@@ -125,68 +125,68 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         if(_amount == Water) {
             _burn(msg.sender, Water, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][Water] -= reward;
-            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
-            btcTokenBalance[msg.sender] += reward;
+        //    wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+        //    btcTokenBalance[msg.sender] += reward;
         } else if (_amount == LiOH){
             _burn(msg.sender, LiOH, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][LiOH] -= reward;
-            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
-            btcTokenBalance[msg.sender] += reward;
+        //    wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+        //    btcTokenBalance[msg.sender] += reward;
         } else if (_amount == H2) {
             _burn(msg.sender, H2, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][H2] -= reward;
-            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
-            btcTokenBalance[msg.sender] += reward;
+        //    wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+        //    btcTokenBalance[msg.sender] += reward;
         } else {
             _burn(msg.sender, H2O2, amountBurned) ; //from, ids [], amounts []
             supplyBalance[msg.sender][H2O2] -= reward;
-            wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
-            btcTokenBalance[msg.sender] += reward;
+        //    wbtcContract.transfer(msg.sender, reward); // make sure enough in contract
+        //    btcTokenBalance[msg.sender] += reward;
         }
     }
 
     // Mint Elements
     function mintHydrogen(uint256 _amount) public {
-        require(_amount > 0, "Amount must be greater than zer0");
+     //   require(_amount > 0, "Amount must be greater than zer0");
         // Transfer wBtc to smart contract
-        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
-        btcTokenBalance[msg.sender] -= _amount;
+    //    wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+     //   btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Hydrogen, _amount, "");
         supplyBalance[msg.sender][Hydrogen] = supplyBalance[msg.sender][Hydrogen] + _amount;
     }
 
     function mintHelium(uint256 _amount) public {
-        require(_amount > 0, "Amount must be greater than zer0");
+     //   require(_amount > 0, "Amount must be greater than zer0");
         // Transfer wBtc to smart contract
-        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
-        btcTokenBalance[msg.sender] -= _amount;
+     //   wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+     //   btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Helium, _amount, "");
         supplyBalance[msg.sender][Helium] =supplyBalance[msg.sender][Helium] + _amount;
     }
 
     function mintLithium(uint256 _amount) public {
-        require(_amount > 0, "Amount must be greater than zer0");
+      //  require(_amount > 0, "Amount must be greater than zer0");
         // Transfer wBtc to smart contract
-        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
-        btcTokenBalance[msg.sender] -= _amount;
+     //   wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+     //   btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Lithium, _amount, "");
         supplyBalance[msg.sender][Lithium] = supplyBalance[msg.sender][Lithium] + _amount;
     }
 
     function mintBeryllium(uint256 _amount) public {
-        require(_amount > 0, "Amount must be greater than zer0");
+     //   require(_amount > 0, "Amount must be greater than zer0");
         // Transfer wBtc to smart contract
-        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
-        btcTokenBalance[msg.sender] -= _amount;
+     //   wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+     //   btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Beryllium, _amount, "");
         supplyBalance[msg.sender][Beryllium] = supplyBalance[msg.sender][Beryllium] + _amount;
     }
 
     function mintOxygen(uint256 _amount) public {
-        require(_amount > 0, "Amount must be greater than zer0");
+     //   require(_amount > 0, "Amount must be greater than zer0");
         // Transfer wBtc to smart contract
-        wbtcContract.transferFrom(msg.sender, address(this), _amount); 
-        btcTokenBalance[msg.sender] -= _amount;
+     //   wbtcContract.transferFrom(msg.sender, address(this), _amount); 
+    //    btcTokenBalance[msg.sender] -= _amount;
         _mint(msg.sender, Oxygen, _amount, "");
         supplyBalance[msg.sender][Oxygen] = supplyBalance[msg.sender][Oxygen] + _amount;
     }
@@ -233,9 +233,9 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         uint256 oxygenRequired = 1;
         //requirement amount check
         uint256 hydrogenRequiredAmount = 2 * _amount;
-        uint256 oxygenRequiredAmount = 2 * _amount;
+        uint256 oxygenRequiredAmount = 1 * _amount;
         //creations
-        uint256 minimum = 1;
+        //uint256 minimum = 1 * _amount;
         //uint256 bonus = 2;
         
         uint256 random = randomResult;
@@ -248,16 +248,16 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         if(random < 10) {  // check this variable
             emit WaterCreationFailed("Failure");
              } else {
-                for(uint256 i = 0; i < _amount; i++){
+                
                     //work on burn batch problem
-                    _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
-                    supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
-                    _burn(msg.sender, Oxygen, oxygenRequired);
-                    supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
+                    _burn(msg.sender, Hydrogen, hydrogenRequiredAmount) ; //from, ids [], amounts []
+                    supplyBalance[msg.sender][Hydrogen] -= hydrogenRequiredAmount;
+                    _burn(msg.sender, Oxygen, oxygenRequiredAmount);
+                    supplyBalance[msg.sender][Oxygen] -= oxygenRequiredAmount;
 
-                    _mint(msg.sender, Water, minimum, '');
-                    supplyBalance[msg.sender][Water] += minimum;
-                }
+                    _mint(msg.sender, Water, _amount, '');
+                    supplyBalance[msg.sender][Water] += _amount;
+                
                 emit WaterCreated(Water, msg.sender, _amount);
             }
         
@@ -317,18 +317,17 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         if(random < 10){  // check this variable
             emit H2O2CreationFailed("Failure");
             } else {
-                for(uint256 i = 0; i < _amount; i++){
-                    //work on burn batch problem
-                    _burn(msg.sender, Hydrogen, hydrogenRequired) ; //from, ids [], amounts []
-                    supplyBalance[msg.sender][Hydrogen] -= hydrogenRequired;
-                    _burn(msg.sender, Oxygen, oxygenRequired);
-                    supplyBalance[msg.sender][Oxygen] -= oxygenRequired;
+                    _burn(msg.sender, Hydrogen, hydrogenRequiredAmount) ; //from, ids [], amounts []
+                    supplyBalance[msg.sender][Hydrogen] -= hydrogenRequiredAmount;
+                    _burn(msg.sender, Oxygen, oxygenRequiredAmount);
+                    supplyBalance[msg.sender][Oxygen] -= oxygenRequiredAmount;
 
-                    _mint(msg.sender, H2O2, minimum, '');
-                    supplyBalance[msg.sender][H2O2] += minimum;
-                }
-                emit H2O2Created(H2O2, msg.sender, minimum);
+                    _mint(msg.sender, H2O2, _amount, '');
+                    supplyBalance[msg.sender][H2O2] += _amount;
+                    emit H2O2Created(H2O2, msg.sender, _amount);
         }
+            
+        
         //queu up a random number
         getRandomNumber();
     }
@@ -346,7 +345,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         uint256 waterRequiredAmount = 2 * _amount;
         //creations
         uint256 minimum = 2;
-        uint256 H2min = 1;
+        uint256 H2min = _amount / 2;
 
         uint256 random = randomResult;
         emit RandomNumber(random);
@@ -357,18 +356,18 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
         if(random < 10){  // check this variable
             emit LiOHCreationFailed("Failure");
             } else {
-                for(uint256 i = 0; i < _amount; i++){
+                
                     //work on burn batch problem
-                    _burn(msg.sender, Lithium, lithiumRequired) ; //from, ids [], amounts []
-                    supplyBalance[msg.sender][Lithium] -= lithiumRequired;
-                    _burn(msg.sender, Water, waterRequired);
-                    supplyBalance[msg.sender][Water] -= waterRequired;
-                    _mint(msg.sender, LiOH, minimum, '');
-                    supplyBalance[msg.sender][LiOH] += minimum;
+                    _burn(msg.sender, Lithium, lithiumRequiredAmount) ; //from, ids [], amounts []
+                    supplyBalance[msg.sender][Lithium] -= lithiumRequiredAmount;
+                    _burn(msg.sender, Water, waterRequiredAmount);
+                    supplyBalance[msg.sender][Water] -= waterRequiredAmount;
+                    _mint(msg.sender, LiOH, _amount, '');
+                    supplyBalance[msg.sender][LiOH] += _amount;
                     _mint(msg.sender, H2, H2min, '');
                     supplyBalance[msg.sender][H2] += H2min;
-                }
-                emit LiOHCreated(LiOH, msg.sender, minimum);
+                
+                emit LiOHCreated(LiOH, msg.sender, _amount);
         }
         //queu up a random number
         getRandomNumber();
