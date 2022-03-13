@@ -118,7 +118,7 @@ contract Chem is ERC1155, Ownable, VRFConsumerBase {
     //Sell Crafted Elements
     function sellNFT(uint256 _amount) public { // for now water 200 pureW 201
         require(_amount >= Water && _amount <= H2O2, "Not Valid Creation");
-        require(_amount >= supplyBalance[msg.sender][_amount], "No Element In Inventory");
+        //require(_amount >= supplyBalance[msg.sender][_amount], "No Element In Inventory");
        // do a requirement for contract balance
         uint256 reward = 1;  // need to multiply by 10 **18
         uint256 amountBurned = 1; 
